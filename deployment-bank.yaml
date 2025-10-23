@@ -1,27 +1,4 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: digital-bank-deployment
-  namespace: digibank
-  labels:
-    app: digital-bank
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: digital-bank
-  template:
-    metadata:
-      labels:
-        app: digital-bank
-    spec:
-      containers:
-      - name: digital-bank
-        image: digisic/digitalbank:latest
-        ports:
-          - name: db-bank-port
-            containerPort: 8443  
-        env:
+env:
             # Debug Options
             - name: LOGGING_LEVEL_IO_DEMO_BANK
               value: "INFO"
@@ -83,20 +60,3 @@ spec:
               value: ""     
             - name: IO_DIGISIC_BANK_OBP_PORT
               value: ""             
-
----
-
-apiVersion: v1
-kind: Service
-metadata:
-  name: digital-bank-svc
-  namespace: digibank
-spec:
-  selector:
-    app: digital-bank
-    type: NodePort
-  ports:
-    - name: https
-      port: 8443  
-      targetPort:  db-bank-port
-
