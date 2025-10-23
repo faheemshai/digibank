@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maven Test Analysis - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ibm-blue: #0f62fe;
+            --ibm-blue-hover: #0353e9;
+            --ibm-gray-10: #f4f4f4;
+            --ibm-gray-20: #e0e0e0;
+            --ibm-gray-30: #c6c6c6;
+            --ibm-gray-50: #8d8d8d;
+            --ibm-gray-70: #525252;
+            --ibm-gray-90: #262626;
+            --ibm-gray-100: #161616;
+            --ibm-success: #198038;
+            --ibm-warning: #f1c21b;
+            --ibm-error: #da1e28;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background-color: var(--ibm-gray-10);
+        }
+
+        .ibm-primary { background-color: var(--ibm-blue); }
+        .ibm-primary-hover:hover { background-color: var(--ibm-blue-hover); }
+        .ibm-success { background-color: var(--ibm-success); }
+        .ibm-warning { background-color: var(--ibm-warning); }
+        .ibm-error { background-color: var(--ibm-error); }
+        .ibm-gray-bg { background-color: var(--ibm-gray-20); }
+
+        .status-passed {
+            background-color: var(--ibm-success);
+            color: white;
+        }
+        .status-failed {
+            background-color: var(--ibm-error);
+            color: white;
+        }
+        .status-warning {
+            background-color: var(--ibm-warning);
+            color: var(--ibm-gray-100);
+        }
+
+        .code-block {
+            background-color: var(--ibm-gray-100);
+            color: var(--ibm-gray-10);
+            font-family: 'Courier New', monospace;
+        }
+
+        .card-shadow {
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        }
+
+        @media print {
+            .no-print { display: none; }
+            body { background-color: white; }
+        }
+
+        
+    </style>
+    <script>
+        function toggleSection(id) {
+            const element = document.getElementById(id);
+            const icon = document.getElementById(id + '-icon');
+            if (element.classList.contains('hidden')) {
+                element.classList.remove('hidden');
+                icon.textContent = '▼';
+            } else {
+                element.classList.add('hidden');
+                icon.textContent = '▶';
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Code copied to clipboard!');
+            });
+        }
+    </script>
+</head>
+<body class="h-full">
+    <header class="ibm-primary text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-6">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold">Maven Test Analysis</h1>
+                </div>
+                <nav class="hidden md:flex space-x-8">
+                    <a href="test-analysis-dashboard.html" class="hover:text-gray-300 transition">Dashboard</a>
+                    <a href="test-results-detailed.html" class="hover:text-gray-300 transition">Test Results</a>
+                    <a href="fix-suggestions.html" class="hover:text-gray-300 transition">Fix Suggestions</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="px-4 py-6 sm:px-0">
+            <!-- Page Header -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900">Test Analysis Dashboard</h1>
+                <p class="mt-2 text-sm text-gray-600">Generated on 2025-09-22 17:34:37</p>
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white overflow-hidden shadow rounded-lg card-shadow">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="w-8 h-8 ibm-success rounded-full flex items-center justify-center">
+                                    <span class="text-white font-bold">✓</span>
+                                </div>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Success Rate</dt>
+                                    <dd class="text-lg font-medium text-gray-900">100.0%</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow rounded-lg card-shadow">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="w-8 h-8 ibm-primary rounded-full flex items-center justify-center">
+                                    <span class="text-white font-bold">#</span>
+                                </div>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Total Tests</dt>
+                                    <dd class="text-lg font-medium text-gray-900">3</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow rounded-lg card-shadow">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="w-8 h-8 ibm-error rounded-full flex items-center justify-center">
+                                    <span class="text-white font-bold">✗</span>
+                                </div>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Failures</dt>
+                                    <dd class="text-lg font-medium text-gray-900">0</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow rounded-lg card-shadow">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center">
+                                    <span class="text-white font-bold">⏱</span>
+                                </div>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Execution Time</dt>
+                                    <dd class="text-lg font-medium text-gray-900">21.11s</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Test Suites Overview -->
+            <div class="bg-white shadow rounded-lg card-shadow">
+                <div class="px-4 py-5 sm:p-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Test Suites Overview</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Suite Name</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tests</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">AtmLocationSearchTest</div>
+                                        <div class="text-sm text-gray-500">io.digisic.bank.test.junit.search.AtmLocationSearchTest</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full status-passed">
+                                            PASSED
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">3</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">11.70s</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">AtmLocationSearchTrnxRepoTest</div>
+                                        <div class="text-sm text-gray-500">io.digisic.bank.test.junit.search.AtmLocationSearchTrnxRepoTest</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full status-passed">
+                                            PASSED
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">0</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">9.41s</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
