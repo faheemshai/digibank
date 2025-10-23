@@ -1,5 +1,4 @@
-env:
-            # Debug Options
+# Debug Options
             - name: LOGGING_LEVEL_IO_DEMO_BANK
               value: "INFO"
             # Digital Broker connection
