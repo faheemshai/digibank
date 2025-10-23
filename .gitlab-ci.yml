@@ -1,0 +1,90 @@
+stages:
+  - build
+  - security_scan
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_HOST: tcp://docker:2375/
+
+# Build bank service
+# build-bank:
+#   stage: build
+#   image: maven:3-openjdk-17
+#   script:
+#     - cd bank
+#     - mvn clean package -DskipTests -DbuildNumber=12
+#   artifacts:
+#     paths:
+#       - bank/target/
+#     expire_in: 1 hour
+
+# Build bank service
+docker-bank:
+  stage: build
+  image: maven:3.8.7-eclipse-temurin-17
+  services:
+    - docker:20.10.16-dind
+  before_script:
+    - apt-get update && apt-get install -y docker.io
+    - docker login -u "$OCP_REG_USER" -p "$OCP_REG_PASSWROD" "$OCP_CI_REGISTRY"
+  script:
+    - cd bank
+    - mvn clean package -DskipTests -DbuildNumber=12
+    # $CI_COMMIT_SHA
+    - docker build -t "$OCP_CI_REGISTRY/$OCP_PROJECT/bank:latest" .
+    - docker push "$OCP_CI_REGISTRY/$OCP_PROJECT/bank:latest"
+
+# # Build broker service
+docker-broker:
+  stage: build
+  image: maven:3.8.7-eclipse-temurin-17
+  services:
+    - docker:20.10.16-dind
+  before_script:
+    - apt-get update && apt-get install -y docker.io
+    - docker login -u "$OCP_REG_USER" -p "$OCP_REG_PASSWROD" "$OCP_CI_REGISTRY"
+  script:
+    - cd broker
+    # $CI_COMMIT_SHA
+    - docker build -t "$OCP_CI_REGISTRY/$OCP_PROJECT/broker:latest" .
+    - docker push "$OCP_CI_REGISTRY/$OCP_PROJECT/broker:latest"
+
+# Build credit service
+build-credit:
+  stage: build
+  image: maven:3.8.7-eclipse-temurin-17
+  services:
+    - docker:20.10.16-dind
+  before_script:
+    - apt-get update && apt-get install -y docker.io
+    - docker login -u "$OCP_REG_USER" -p "$OCP_REG_PASSWROD" "$OCP_CI_REGISTRY"
+  script:
+    - cd credit
+    - mvn clean package -DskipTests -DbuildNumber=4
+    # $CI_COMMIT_SHA
+    - docker build -t "$OCP_CI_REGISTRY/$OCP_PROJECT/credit:latest" .
+    - docker push "$OCP_CI_REGISTRY/$OCP_PROJECT/credit:latest"
+
+container_scanning:
+  stage: security_scan
+  image: docker:20.10.16
+  services:
+    - docker:20.10.16-dind  
+  variables:
+    TRIVY_NON_SSL: "true"
+  before_script:
+    - apk add --no-cache curl
+    - curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+    - trivy --version
+    - docker login -u "$OCP_REG_USER" -p "$OCP_REG_PASSWROD" "$OCP_CI_REGISTRY"
+  script:
+    # CI_COMMIT_SHA
+    - trivy image --exit-code 0 --severity HIGH,CRITICAL "$OCP_CI_REGISTRY/$OCP_PROJECT/bank:latest"
+    - trivy image --exit-code 0 --severity HIGH,CRITICAL "$OCP_CI_REGISTRY/$OCP_PROJECT/credit:latest"
+  allow_failure: true
+  needs:
+    - job: docker-bank
+      artifacts: false
+    - job: build-credit
+      artifacts: false

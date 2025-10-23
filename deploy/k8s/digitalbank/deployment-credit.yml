@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: digital-bank-credit-deployment
+  namespace: digibank
+  labels:
+    app: digital-bank-credit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: digital-bank-credit
+  template:
+    metadata:
+      labels:
+        app: digital-bank-credit
+    spec:
+      containers:
+      - name: digital-bank-credit
+        image: digisic/digitalcredit:latest
+        ports:
+          - name: db-credit-port
+            containerPort: 8443
+        env:
+          # Debug Options
+          - name: LOGGING_LEVEL_IO_DIGISIC_CREDIT
+            value: "INFO"
+          # Digital Broker Connection
+          - name: SPRING_ARTEMIS_MODE
+            value: "native"
+          - name: SPRING_ARTEMIS_HOST
+            value: "digital-bank-broker-svc"
+          - name: SPRING_ARTEMIS_PORT
+            value: "61616"
+          - name: SPRING_ARTEMIS_USER
+            value: "admin"
+          - name: SPRING_ARTEMIS_PASSWORD
+            value: "admin"
+          # Credit Application Process
+          - name: IO_DIGISIC_CREDIT_APP_PROCESS_ENABLED
+            value: "true"
+          - name: IO_DIGISIC_CREDIT_APP_PROCESS_TIME
+            value: "20"
+          # Digital Credit Application Process JMS Queues         
+          - name: IO_DIGISIC_PARTNER_CREDIT_APP_REQUEST
+            value: "CREDIT.APP.REQUEST"
+          - name: IO_DIGISIC_PARTNER_CREDIT_APP_RESPONSE
+            value: "CREDIT.APP.RESPONSE"            
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: digital-bank-credit-svc
+  namespace: digibank
+spec:
+  selector:
+    app: digital-bank-credit
+    type: NodePort
+  ports:
+    - name: http-credit
+      port: 3500  
+      targetPort: db-credit-port
+

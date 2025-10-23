@@ -1,0 +1,131 @@
+version: "3.5"
+services:
+
+# =====================================================================
+# Digital Broker Service Configuration
+# =====================================================================
+  broker:
+    image: digisic/digitalbroker:latest
+    container_name: broker
+    hostname: broker
+    ports:
+      - "8161:8161"
+      - "61616:61616"
+    networks:
+      - digitalnet
+    restart: unless-stopped
+
+# =====================================================================
+# Digital Credit Service Configuration
+# =====================================================================    
+  credit:
+    image: digisic/digitalcredit:latest
+    container_name: credit
+    hostname: credit
+    environment:
+
+      # Logging Options
+      LOGGING_LEVEL_IO_DIGISIC_CREDIT: INFO
+
+      # Digital Broker Connection
+      SPRING_ARTEMIS_MODE: native
+      SPRING_ARTEMIS_HOST: broker
+      SPRING_ARTEMIS_PORT: 61616
+      SPRING_ARTEMIS_USER: admin
+      SPRING_ARTEMIS_PASSWORD: admin
+
+      # Credit Application Process
+      IO_DIGISIC_CREDIT_APP_PROCESS_ENABLED: 'true'
+      IO_DIGISIC_CREDIT_APP_PROCESS_TIME: 20
+
+      # Digital Credit Application Process JMS Queues
+      IO_DIGISIC_PARTNER_CREDIT_APP_REQUEST: CREDIT.APP.REQUEST
+      IO_DIGISIC_PARTNER_CREDIT_APP_RESPONSE: CREDIT.APP.RESPONSE
+
+    ports:
+      - "3500:8080"
+      - "3535:8443"
+    networks:
+      - digitalnet
+    volumes:
+      - digitalcredit:/usr/local/tomcat/conf
+    depends_on:
+      - broker
+    restart: unless-stopped
+
+# =====================================================================
+# Digital Bank Service Configuration
+# =====================================================================
+  bank:
+    image: digisic/digitalbank:latest
+    container_name: bank
+    hostname: bank
+    environment:
+    
+      # Session Management
+      SERVER_SERVLET_SESSION_TIMEOUT: 5m
+      IO_DIGISIC_MAX_SESSIONS: 10000 # Set to 1 for single concurrent user session
+
+      # Logging Options
+      LOGGING_LEVEL_IO_DIGISIC_BANK: INFO
+      
+      # Digital Broker connection
+      SPRING_ARTEMIS_MODE: native
+      SPRING_ARTEMIS_HOST: broker
+      SPRING_ARTEMIS_PORT: 61616
+      SPRING_ARTEMIS_USER: admin
+      SPRING_ARTEMIS_PASSWORD: admin
+
+      # Digital Credit Connection
+      IO_DIGISIC_CREDIT_ENABLED: 'true'
+      IO_DIGISIC_CREDIT_PROTOCOL: http
+      IO_DIGISIC_CREDIT_HOST: credit
+      IO_DIGISIC_CREDIT_PORT: 8080 
+      IO_DIGISIC_CREDIT_CONTEXT-PATH: /credit
+      IO_DIGISIC_CREDIT_USERNAME: admin@demo.io
+      IO_DIGISIC_CREDIT_PASSWORD: Demo123!
+
+      # Digital Credit Application Process JMS Queues
+      IO_DIGISIC_PARTNER_CREDIT_APP_REQUEST: CREDIT.APP.REQUEST
+      IO_DIGISIC_PARTNER_CREDIT_APP_RESPONSE: CREDIT.APP.RESPONSE
+
+      # ATM Location Service Connection 
+      IO_DIGISIC_BANK_ATM_PROTOCOL: https
+      IO_DIGISIC_BANK_ATM_HOST: bankingservices.io # uat-api.synapsefi.com #
+      IO_DIGISIC_BANK_ATM_PORT: 
+
+      # VISA Direct Payment Service
+      IO_DIGISIC_BANK_VISA_PROTOCOL: https
+      IO_DIGISIC_BANK_VISA_HOST: creditservices.io
+      IO_DIGISIC_BANK_VISA_PORT:
+      
+      # Open Banking API Service
+      IO_DIGISIC_BANK_OBP_ENABLED: 'true'
+      IO_DIGISIC_BANK_OBP_CONSUMER_KEY: vwfpvwfr1kngt0up2jelebzmvxrhst4vhxvw1jm3
+      IO_DIGISIC_BANK_OBP_VERSION: v4.0.0
+      IO_DIGISIC_BANK_OBP_PROTOCOL: https
+      IO_DIGISIC_BANK_OBP_HOST: openbankingservices.io
+      IO_DIGISIC_BANK_OBP_PORT:
+      
+
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    networks:
+      - digitalnet
+    volumes:
+      - digitalbank:/usr/local/tomcat/conf
+    depends_on:
+      - broker
+      - credit
+    restart: unless-stopped
+      
+# =====================================================================
+# Docker Network Configuration
+# =====================================================================
+networks:
+  digitalnet:
+volumes:
+  digitalcredit:
+  digitalbank:
+
